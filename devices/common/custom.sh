@@ -44,7 +44,7 @@ sed -i \
 	-e 's,$(STAGING_DIR_HOST)/bin/upx,upx,' \
 	package/feeds/custom/*/Makefile
 
-date=`date +%Y年%m月%d号%H时%M分%S秒`
+date=`(date +“%Y%m%d”)`
 sed -i -e "/\(# \)\?REVISION:=/c\REVISION:=$date" -e '/VERSION_CODE:=/c\VERSION_CODE:=$(REVISION)' include/version.mk
 
 cp -f devices/common/.config .config
