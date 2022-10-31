@@ -1,9 +1,9 @@
 #!/bin/bash
 
 shopt -s extglob
-rm -rf feeds/makebl/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
+rm -rf feeds/custom/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
 
-for ipk in $(find feeds/makebl/* -maxdepth 0 -type d);
+for ipk in $(find feeds/custom/* -maxdepth 0 -type d);
 do
 	[[ "$(grep "KernelPackage" "$ipk/Makefile")" && ! "$(grep "BuildPackage" "$ipk/Makefile")" ]] && rm -rf $ipk || true
 done
@@ -24,16 +24,16 @@ rm -Rf feeds/base/package/utils/!(util-linux|lua)
 rm -Rf feeds/base/package/system/!(opkg|ubus|uci)
 
 ./scripts/feeds update -a
-./scripts/feeds install -a -p makebl
+./scripts/feeds install -a -p custom
 ./scripts/feeds install -a
 
-sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/makebl/luci-*/luasrc/controller/* -name "*.lua"`
-sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/makebl/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
+sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/custom/luci-*/luasrc/controller/* -name "*.lua"`
+sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/custom/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
 sed -i 's/Os/O2/g' include/target.mk
 #rm -rf ./feeds/packages/lang/golang
 #svn co https://github.com/immortalwrt/packages/trunk/lang/golang feeds/packages/lang/golang
 
-sed -i '/root:/c\root:$1$tTPCBw1t$ldzfp37h5lSpO9VXk4uUE\/:18336:0:99999:7:::' package/feeds/makebl/base-files/files/etc/shadow
+sed -i '/root:/c\root:$1$tTPCBw1t$ldzfp37h5lSpO9VXk4uUE\/:18336:0:99999:7:::' package/feeds/custom/base-files/files/etc/shadow
 sed -i "s/tty1::askfirst/tty1::respawn/g" target/linux/*/base-files/etc/inittab
 
 sed -i \
@@ -42,7 +42,7 @@ sed -i \
 	-e 's/+python\( \|$\)/+python3/' \
 	-e 's?../../lang?$(TOPDIR)/feeds/packages/lang?' \
 	-e 's,$(STAGING_DIR_HOST)/bin/upx,upx,' \
-	package/feeds/makebl/*/Makefile
+	package/feeds/custom/*/Makefile
 
 date=`date +%m.%d`
 sed -i -e "/\(# \)\?REVISION:=/c\REVISION:=$date" -e '/VERSION_CODE:=/c\VERSION_CODE:=$(REVISION)' include/version.mk
