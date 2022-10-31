@@ -75,11 +75,11 @@ jobs:
 
     - name: Trigger Packages Update
       run: |
-        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/small-package/actions/runs" | jq -r '.workflow_runs[0].created_at')
+        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kenzok8/small-package/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
         now=$(date -d "$(date)" +%s)
         if [[ $(expr $gitdate + 120) < $now ]]; then
-        curl -X POST https://api.github.com/repos/makebl/small-package/dispatches \
+        curl -X POST https://api.github.com/repos/kenzok8/small-package/dispatches \
         -H "Accept: application/vnd.github.everest-preview+json" \
         -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
         --data '{"event_type": "update compiling"}'
@@ -202,7 +202,7 @@ jobs:
             if [[ "$fpkg" && ! "$during" ]]; then
               comp
             else
-              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/small-package/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date')
+              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kenzok8/small-package/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date')
               if [ $gitdate != null ]; then
                 gitdate=$(date -d "$gitdate" +%s)
                 now=$(date -d "$(date '+%Y-%m-%d %H:%M:%S')" +%s)
@@ -236,7 +236,7 @@ jobs:
         if [[ $(ls -l openwrt/error* | grep "^-" | wc -l) -le 0 ]]; then
            echo "NAME=${Emoji[$[$RANDOM % ${#Emoji[@]}]]} ${{ env.date2 }} ${{ env.MTARGET }} ${{ env.EMOJI }}" >> $GITHUB_ENV
         else
-           echo "NAME=❌ ${{ env.date2 }} ${{ env.MTARGET }} ❌" >> $GITHUB_ENV
+           echo "NAME=🤞 ${{ env.date2 }} ${{ env.MTARGET }} 🤞" >> $GITHUB_ENV
         fi
 
     - name: Upload firmware to cowtransfer
