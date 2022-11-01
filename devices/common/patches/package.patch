@@ -9,6 +9,4 @@
 +define Package/$(PKG_NAME)/conffiles
 +/etc/config/
 +/etc/$(PKG_NAME)/
-+endef
-+endif
 +
