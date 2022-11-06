@@ -66,11 +66,11 @@ jobs:
         elif [ ${{matrix.target}} == "x86_64" ]; then
             echo "MTARGET=x86_64" >> $GITHUB_ENV
         elif [ ${{matrix.target}} == "Rpi-4B" ]; then
-            echo "MTARGET=aarch64_cortex-a72" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_cortex-a72-Rpi" >> $GITHUB_ENV
          elif [ ${{matrix.target}} == "nanopi-r2s" ]; then
-            echo "MTARGET=aarch64_generic" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_generic-nanopi" >> $GITHUB_ENV
          elif [ ${{matrix.target}} == "N1" ]; then
-            echo "MTARGET=aarch64_cortex-a53" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_cortex-a53-n1" >> $GITHUB_ENV
         fi
 
     - name: Trigger Packages Update
