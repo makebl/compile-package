@@ -310,7 +310,7 @@ jobs:
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
         host: op.shuaige.cf
-        username: root
+        username: shuai
         key: ${{ env.SSH_PRIVATE_KEY }}
         script: |
            cp -R /www/wwwroot/packages/keep/common/* /www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/
