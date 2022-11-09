@@ -301,10 +301,21 @@ jobs:
         SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
         ARGS: "-avzr"
         SOURCE: "packages/"
-        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+        REMOTE_HOST: op.shuaige.cf
         REMOTE_USER: root
-        TARGET: "/www/server/nginx/html/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
+        TARGET: "/www/server/nginx/html/op.shuaige.cf/packages/${{matrix.target}}/"
+
+    - name: remote ssh command
+      uses: appleboy/ssh-action@master
+      if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
+      with:
+        host: op.shuaige.cf
+        username: root
+        key: ${{ env.SSH_PRIVATE_KEY }}
+        script: |
+          # cp -R /www/server/nginx/html/packages/keep/common/* /www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/
+          # cp -R /www/server/nginx/html/op.shuaige.cf/packages/keep/${{matrix.target}}/* /www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/
+          opkg ${{matrix.target}} &
 
     - name: WeChat notification
       continue-on-error: true
