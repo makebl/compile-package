@@ -302,7 +302,7 @@ jobs:
         REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
         REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
         REMOTE_USER: root
-        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
+        TARGET: "/www/server/nginx/html/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
 
     - name: WeChat notification
       continue-on-error: true
