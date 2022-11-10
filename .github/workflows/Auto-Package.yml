@@ -301,20 +301,20 @@ jobs:
         SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
         ARGS: "-avzr"
         SOURCE: "packages/"
-        REMOTE_HOST: op.shuaige.cf
+        REMOTE_HOST: op1.shuaige.cf
         REMOTE_USER: root
-        TARGET: "/www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/"
+        TARGET: "/www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/"
 
     - name: remote ssh command
       uses: appleboy/ssh-action@master
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
         host: op.shuaige.cf
-        username: shuai
+        username: root
         key: ${{ env.SSH_PRIVATE_KEY }}
         script: |
-           cp -R /www/wwwroot/packages/keep/common/* /www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/
-           cp -R /www/wwwroot/op.shuaige.cf/packages/keep/${{matrix.target}}/* /www/wwwroot/op.shuaige.cf/packages/${{matrix.target}}/
+           cp -R /www/wwwroot/packages/keep/common/* /www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/
+           cp -R /www/wwwroot/op1.shuaige.cf/packages/keep/${{matrix.target}}/* /www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/
            opkg ${{matrix.target}} &
 
     - name: WeChat notification
