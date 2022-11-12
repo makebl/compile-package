@@ -302,7 +302,9 @@ jobs:
        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
        REMOTE_USER: root
        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
-
+       run: |
+        cd /www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/lang.sh
+    
     - name: WeChat notification
       continue-on-error: true
       if: env.SCKEY
