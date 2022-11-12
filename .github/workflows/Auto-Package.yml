@@ -47,7 +47,7 @@ jobs:
         workflow_id: 13660847
         access_token: ${{ github.token }}
 
-    - name: Load Settings.ini
+    - name: 加载设置
       run: |
         source "${GITHUB_WORKSPACE}/devices/common/settings.ini"
         echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV
@@ -73,7 +73,7 @@ jobs:
             echo "MTARGET=aarch64_cortex-a53" >> $GITHUB_ENV
         fi
 
-    - name: Trigger Packages Update
+    - name: 更新软件包
       run: |
         gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
@@ -85,7 +85,7 @@ jobs:
         --data '{"event_type": "update compiling"}'
         fi
 
-    - name: Initialization environment
+    - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -97,14 +97,14 @@ jobs:
         sudo -E apt-get -qq clean ) &
         sudo timedatectl set-timezone "$TZ"
 
-    - name: Get current date
+    - name: 获取当前日期
       id: date
       run: |
         echo "date1=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
         echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
         echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV
 
-    - name: Clone source code
+    - name: 下载源代码
       run: |
         REPO_BRANCH="$(curl -s https://api.github.com/repos/openwrt/openwrt/tags | jq -r '.[].name' | grep v21 | head -n 1 | sed -e 's/v//')"
         if [ ${{matrix.target}} == "ac2100" ]; then
@@ -119,7 +119,7 @@ jobs:
             curl -fL -m 60 -o sdk.tar.xz https://downloads.openwrt.org/releases/$REPO_BRANCH/targets/armvirt/64/openwrt-sdk-$REPO_BRANCH-armvirt-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz || curl -fL -m 60 -o sdk.tar.xz https://openwrt.tetaneutral.net/releases/21.02-SNAPSHOT/targets/armvirt/64/openwrt-sdk-21.02-SNAPSHOT-armvirt-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
         fi
 
-    - name: Free up disk space
+    - name: 释放磁盘空间
       if: env.FREE_UP_DISK == 'true'
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -129,7 +129,7 @@ jobs:
         ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
         ln -sf /mnt/openwrt/bin openwrt/bin
 
-    - name: Load custom configuration
+    - name: 加载自定义配置
       run: |
         mkdir openwrt
         tar -xJf sdk.tar.xz -C openwrt
@@ -164,11 +164,11 @@ jobs:
           #sed -i "s/index()/index()\nif luci.sys.exec(\"cat \/etc\/openwrt_release | grep -o -E ^DISTRIB_DESCRIPTION='.*(GaryPang|Kiddin)'\") == \"\" then return end/g" package/feeds/custom/luci-app*/luasrc/controller/*.lua
         #fi
 
-    - name: SSH connection to Actions
-      uses: kenzok78/debugger-action@master
+    - name: SSH 连接
+      uses: makebl/debugger-action@master
       if: contains(github.event.action, 'ssh')
 
-    - name: Prepare
+    - name: 准备工作
       run: |
         cd openwrt
         make defconfig
@@ -178,7 +178,7 @@ jobs:
         mkdir package/feeds/custom
         mv -f custom.b/{wxbase,lib*,rapidjson,jpcre2,quickjspp,qtbase,qttools,rblibtorrent} package/feeds/custom/
 
-    - name: Compile the firmware
+    - name: 编译插件
       run: |
         cd openwrt
           echo -e "$(($(nproc)+1)) thread compile"
@@ -219,10 +219,10 @@ jobs:
           done
         echo "status=success" >> $GITHUB_ENV
 
-    - name: Check space usage
+    - name: 检查空间使用情况
       run: df -hT
 
-    - name: Organize files
+    - name: 整理文件
       id: organize
       run: |
         mkdir packages
@@ -239,7 +239,7 @@ jobs:
            echo "NAME=❌ ${{ env.date2 }} ${{ env.MTARGET }} ❌" >> $GITHUB_ENV
         fi
 
-    - name: Upload firmware to cowtransfer
+    - name: 上传插件到 WeTransfer
       if: env.UPLOAD_FIRMWARE_TO_COWTRANSFER == 'true'
       continue-on-error: true
       run: |
@@ -249,7 +249,7 @@ jobs:
         echo "COWURL=$cowurl" >> $GITHUB_ENV
         echo "Download Link: ${{ env.EMOJI }} $cowurl ${{ env.EMOJI }} 🎈"
  
-    - name: Upload firmware to WeTransfer
+    - name: 上传插件到 WeTransfer
       if: env.UPLOAD_FIRMWARE_TO_WETRANSFER == 'true'
       continue-on-error: true
       run: |
@@ -259,7 +259,7 @@ jobs:
         echo "WETRANS=$wetrans" >> $GITHUB_ENV
         echo "Download Link: ${{ env.EMOJI }} $wetrans ${{ env.EMOJI }}🎈"
         
-    - name: Create release
+    - name: 创建发布
       id: create_release
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
       continue-on-error: true
@@ -269,7 +269,7 @@ jobs:
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
 
-    - name: Upload packages for release
+    - name: 上传插件包
       uses: softprops/action-gh-release@59c3b4891632ff9a897f99a91d7bc557467a3a22
       continue-on-error: true
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
@@ -283,7 +283,7 @@ jobs:
         tag_name: ${{ env.date1 }}_${{ env.MTARGET }}
         body_path: release.txt
 
-    - name: Upload packages for artifact
+    - name: 上传插件到 artifact
       uses: actions/upload-artifact@main
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_ARTIFACT == 'true'
@@ -291,7 +291,7 @@ jobs:
         name: ${{ env.date3 }} ${{ env.MTARGET }}
         path: ${{ env.FIRMWARE }}
 
-    - name: deploy files to server
+    - name: 上传插件到服务器
       uses: easingthemes/ssh-deploy@main
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
@@ -304,25 +304,25 @@ jobs:
        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
 
     
-    - name: WeChat notification
+    - name: 微信通知
       continue-on-error: true
       if: env.SCKEY
       run: |
         [ ${{ env.status }} == 'success' ] && curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=🎉OpenWrt_${{ env.date3 }}_${{ env.MTARGET }}软件仓库已更新😋|| curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=❌OpenWrt_${{ env.date3 }}_${{ env.MTARGET }}软件仓库更新失败😂
 
-    - name: Telegram notification
+    - name: Telegram 通知
       if: env.TELEGRAM_TOKEN && ! contains(github.event.action, 'notg')
       run: |
          [ ${{ env.status }} == 'success' ] && curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.date3 }} ${{ env.MTARGET }} 软件仓库已更新 😋  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage"
 
-    - name: Delete workflow runs
+    - name: 删除工作流
       uses: Mattraks/delete-workflow-runs@v2
       continue-on-error: true
       with:
         retain_days: 1
         keep_minimum_runs: 1
 
-    - name: Remove old Releases
+    - name: 删除旧版本
       uses: shidahuilang/delete-older-releases@main
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true' && !cancelled()
