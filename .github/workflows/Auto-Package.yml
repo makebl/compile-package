@@ -18,10 +18,10 @@ on:
 
 env:
   REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-  PPPOE_USERNAME: ${{ secrets.PPPOE_USERNAME }}
-  PPPOE_PASSWD: ${{ secrets.PPPOE_PASSWD }}
   SCKEY: ${{ secrets.SCKEY }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
@@ -38,13 +38,13 @@ jobs:
         
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@main
 
     - name: cancel running workflows
       uses: styfle/cancel-workflow-action@main
       if: contains(github.event.action, 'cw')
       with:
-        workflow_id: Packages-AutoBuild.yml
+        workflow_id: 13660847
         access_token: ${{ github.token }}
 
     - name: Load Settings.ini
@@ -66,23 +66,23 @@ jobs:
         elif [ ${{matrix.target}} == "x86_64" ]; then
             echo "MTARGET=x86_64" >> $GITHUB_ENV
         elif [ ${{matrix.target}} == "Rpi-4B" ]; then
-            echo "MTARGET=aarch64_cortex-a72-Rpi" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_cortex-a72" >> $GITHUB_ENV
          elif [ ${{matrix.target}} == "nanopi-r2s" ]; then
-            echo "MTARGET=aarch64_generic-nanopi" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_generic" >> $GITHUB_ENV
          elif [ ${{matrix.target}} == "N1" ]; then
-            echo "MTARGET=aarch64_cortex-a53-n1" >> $GITHUB_ENV
+            echo "MTARGET=aarch64_cortex-a53" >> $GITHUB_ENV
         fi
 
     - name: Trigger Packages Update
       run: |
-        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
+        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kenzok8/small-package/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
         now=$(date -d "$(date)" +%s)
         if [[ $(expr $gitdate + 120) < $now ]]; then
-        curl -X POST https://api.github.com/repos/makebl/packages/dispatches \
+        curl -X POST https://api.github.com/repos/kenzok8/small-package/dispatches \
         -H "Accept: application/vnd.github.everest-preview+json" \
         -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
-        --data '{"event_type": "update"}'
+        --data '{"event_type": "update compiling"}'
         fi
 
     - name: Initialization environment
@@ -90,14 +90,12 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: |
         ( sudo -E apt-get -qq update
-        sudo -E apt-get -qq install build-essential clang flex g++ gawk gcc-multilib gettext \
-        git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev swig libpython3-dev aria2 jq rename bc libfuse-dev libelf-dev
+        sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs gcc-multilib g++-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx-ucl libelf-dev autoconf automake libtool autopoint device-tree-compiler ccache xsltproc rename antlr3 gperf wget curl swig rsync
         sudo -E apt-get -qq purge azure-cli ghc* zulu* hhvm llvm* firefox powershell openjdk* dotnet* google* mysql* php* android*
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean ) &
         sudo timedatectl set-timezone "$TZ"
-
 
     - name: Get current date
       id: date
@@ -149,7 +147,6 @@ jobs:
         if [ -f "devices/${{matrix.target}}/custom.sh" ]; then
           /bin/bash "devices/${{matrix.target}}/custom.sh"
         fi
-
         find "devices/common/patches" -type f -name '*.patch' ! -name '*.b.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
         if [ -n "$(ls -A "devices/${{matrix.target}}/patches" 2>/dev/null)" ]; then
           find "devices/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
@@ -163,12 +160,12 @@ jobs:
           echo >> .config
           cat devices/${{matrix.target}}/.config >> .config
         fi
-        #if [[ ${{github.actor}} == "makebl" ]]; then
+        #if [[ ${{github.actor}} == "kenzok8" ]]; then
           #sed -i "s/index()/index()\nif luci.sys.exec(\"cat \/etc\/openwrt_release | grep -o -E ^DISTRIB_DESCRIPTION='.*(GaryPang|Kiddin)'\") == \"\" then return end/g" package/feeds/custom/luci-app*/luasrc/controller/*.lua
         #fi
 
     - name: SSH connection to Actions
-      uses: makebl/debugger-action@master
+      uses: kenzok78/debugger-action@master
       if: contains(github.event.action, 'ssh')
 
     - name: Prepare
@@ -239,7 +236,7 @@ jobs:
         if [[ $(ls -l openwrt/error* | grep "^-" | wc -l) -le 0 ]]; then
            echo "NAME=${Emoji[$[$RANDOM % ${#Emoji[@]}]]} ${{ env.date2 }} ${{ env.MTARGET }} ${{ env.EMOJI }}" >> $GITHUB_ENV
         else
-           echo "NAME=🤞 ${{ env.date2 }} ${{ env.MTARGET }} 🤞" >> $GITHUB_ENV
+           echo "NAME=❌ ${{ env.date2 }} ${{ env.MTARGET }} ❌" >> $GITHUB_ENV
         fi
 
     - name: Upload firmware to cowtransfer
@@ -301,21 +298,10 @@ jobs:
     #    SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
     #    ARGS: "-avzr"
     #    SOURCE: "packages/"
-    #    REMOTE_HOST: op1.shuaige.cf
+    #    REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+    #    REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
     #    REMOTE_USER: root
-    #    TARGET: "/www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/"
-
-    - name: remote ssh command
-      uses: appleboy/ssh-action@master
-      if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
-      with:
-        host: op.shuaige.cf
-        username: root
-        key: ${{ env.SSH_PRIVATE_KEY }}
-        script: |
-           cp -R /www/wwwroot/packages/keep/common/* /www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/
-           cp -R /www/wwwroot/op1.shuaige.cf/packages/keep/${{matrix.target}}/* /www/wwwroot/op1.shuaige.cf/packages/${{matrix.target}}/
-           opkg ${{matrix.target}} &
+    #    TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
 
     - name: WeChat notification
       continue-on-error: true
@@ -329,14 +315,14 @@ jobs:
         # [ ${{ env.status }} == 'success' ] && curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.date3 }} ${{ env.MTARGET }} 软件仓库已更新 😋  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage"
 
     - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@v2
+      uses: GitRML/delete-workflow-runs@main
       continue-on-error: true
       with:
         retain_days: 1
         keep_minimum_runs: 1
 
     - name: Remove old Releases
-      uses: shidahuilang/delete-older-releases@main
+      uses: dev-drprasad/delete-older-releases@master
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true' && !cancelled()
       with:
