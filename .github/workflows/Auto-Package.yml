@@ -303,7 +303,9 @@ jobs:
        REMOTE_USER: root
        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
        run: |
-        cd /www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/lang.sh
+        cd /www/wwwroot/oo.shuaige.cf/packages/aarch64_cortex-a72/lang.sh
+        cd /www/wwwroot/oo.shuaige.cf/packages/aarch64_generic/lang.sh
+        cd /www/wwwroot/oo.shuaige.cf/packages/x86_64/lang.sh
     
     - name: WeChat notification
       continue-on-error: true
