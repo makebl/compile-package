@@ -115,4 +115,3 @@ ln -sf /usr/bin/python3 staging_dir/host/bin/python3
 cp -f devices/common/po2lmo staging_dir/host/bin/po2lmo
 
 chmod +x staging_dir/host/bin/po2lmo
-
