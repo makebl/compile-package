@@ -30,8 +30,8 @@ rm -Rf feeds/base/package/system/!(opkg|ubus|uci)
 sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/custom/luci-*/luasrc/controller/* -name "*.lua"`
 sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/custom/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
 sed -i 's/Os/O2/g' include/target.mk
-rm -rf ./feeds/packages/lang/golang
-svn co https://github.com/immortalwrt/packages/trunk/lang/golang feeds/packages/lang/golang
+#rm -rf ./feeds/packages/lang/golang
+#svn co https://github.com/immortalwrt/packages/trunk/lang/golang feeds/packages/lang/golang
 
 sed -i '/root:/c\root:$1$tTPCBw1t$ldzfp37h5lSpO9VXk4uUE\/:18336:0:99999:7:::' package/feeds/custom/base-files/files/etc/shadow
 sed -i "s/tty1::askfirst/tty1::respawn/g" target/linux/*/base-files/etc/inittab
