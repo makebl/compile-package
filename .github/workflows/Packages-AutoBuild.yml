@@ -311,7 +311,7 @@ jobs:
         SOURCE: "packages/"
         REMOTE_HOST: /${{ secrets.REMOTE_HOST }}/
         REMOTE_USER: root
-        TARGET: "/www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/"
+        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
 
     - name: remote ssh command
       uses: appleboy/ssh-action@master
@@ -321,9 +321,9 @@ jobs:
         username: root
         key: ${{ env.SSH_PRIVATE_KEY }}
         script: |
-          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/common/* /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/
-          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/${{matrix.target}}/* /www/wwwroot//${{ secrets.REMOTE_HOST }}/${{matrix.target}}/
-          opkg ${{matrix.target}} &
+          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/common/* "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
+          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/${{ env.MTARGET }}/"/* "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{ env.MTARGET }}/"
+          opkg ${{ env.MTARGET }}/"
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
