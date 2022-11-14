@@ -1,7 +1,7 @@
 #!/bin/bash
 
 shopt -s extglob
-rm -rf feeds/kiddin9/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
+rm -rf feeds/makebl/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
 
 for ipk in $(find feeds/makebl/* -maxdepth 0 -type d);
 do
