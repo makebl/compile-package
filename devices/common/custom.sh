@@ -29,14 +29,14 @@ status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/r
 done
 
 ./scripts/feeds update -a
-./scripts/feeds install -a -p kiddin9 -f
+./scripts/feeds install -a -p makebl -f
 ./scripts/feeds install -a
 
 rm -rf feeds/packages/lang/golang
 svn export https://github.com/coolsnowwolf/packages/trunk/lang/golang feeds/packages/lang/golang
 
-sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/kiddin9/luci-*/luasrc/controller/* -name "*.lua"`
-# sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/kiddin9/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
+sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/makebl/luci-*/luasrc/controller/* -name "*.lua"`
+# sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/makebl/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
 sed -i 's/Os/O2/g' include/target.mk
 
 sed -i \
@@ -45,7 +45,7 @@ sed -i \
 	-e 's/+python\( \|$\)/+python3/' \
 	-e 's?../../lang?$(TOPDIR)/feeds/packages/lang?' \
 	-e 's,$(STAGING_DIR_HOST)/bin/upx,upx,' \
-	package/feeds/kiddin9/*/Makefile
+	package/feeds/makebl/*/Makefile
 
 cp -f devices/common/.config .config
 mv feeds/base feeds/base.bak
