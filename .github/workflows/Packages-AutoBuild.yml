@@ -328,14 +328,14 @@ jobs:
             opkg ${{matrix.target}} &
 
     - name: 删除工作流运行
-      uses: GitRML/delete-workflow-runs@main
+      uses: Mattraks/delete-workflow-runs@v2
       continue-on-error: true
       with:
         retain_days: 20
         keep_minimum_runs: 1
 
     - name: 删除旧版本
-      uses: dev-drprasad/delete-older-releases@master
+      uses: shidahuilang/delete-older-releases@main
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true' && !cancelled()
       with:
