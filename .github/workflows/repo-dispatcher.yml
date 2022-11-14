@@ -21,7 +21,7 @@ on:
       packages:
         description: 'Packages'
         required: false
-        default: ''
+        default: 'luci-app-'
 
 env:
   REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
