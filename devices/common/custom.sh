@@ -36,7 +36,7 @@ rm -rf feeds/packages/lang/golang
 svn export https://github.com/coolsnowwolf/packages/trunk/lang/golang feeds/packages/lang/golang
 
 sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/makebl/luci-*/luasrc/controller/* -name "*.lua"`
-# sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/makebl/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
+sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/makebl/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
 sed -i 's/Os/O2/g' include/target.mk
 
 sed -i \
