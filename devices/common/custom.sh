@@ -3,7 +3,7 @@
 shopt -s extglob
 rm -rf feeds/kiddin9/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
 
-for ipk in $(find feeds/kiddin9/* -maxdepth 0 -type d);
+for ipk in $(find feeds/makebl/* -maxdepth 0 -type d);
 do
 	[[ "$(grep "KernelPackage" "$ipk/Makefile")" && ! "$(grep "BuildPackage" "$ipk/Makefile")" ]] && rm -rf $ipk || true
 done
@@ -22,10 +22,10 @@ rm -Rf feeds/base/package/system/!(opkg|ubus|uci|ca-certificates)
 rm -Rf feeds/base/package/kernel/!(cryptodev-linux)
 #COMMENT
 
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
+status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
 while [ "$status" == "in_progress" ];do
 sleep 5
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
+status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
 done
 
 ./scripts/feeds update -a
