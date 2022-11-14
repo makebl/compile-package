@@ -22,11 +22,11 @@ rm -Rf feeds/base/package/system/!(opkg|ubus|uci|ca-certificates)
 rm -Rf feeds/base/package/kernel/!(cryptodev-linux)
 #COMMENT
 
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
-while [ "$status" == "in_progress" ];do
-sleep 5
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
-done
+#status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
+#while [ "$status" == "in_progress" ];do
+#sleep 5
+#status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
+#done
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a -p makebl -f
