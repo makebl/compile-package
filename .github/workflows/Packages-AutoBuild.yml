@@ -52,7 +52,7 @@ jobs:
         workflow_id: Packages-AutoBuild.yml
         access_token: ${{ github.token }}
 
-    - name: Load Settings.ini
+    - name: 加载设置
       run: |
         source "${GITHUB_WORKSPACE}/devices/common/settings.ini"
         echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV
@@ -68,7 +68,7 @@ jobs:
         echo "UPLOAD_FIRMWARE_TO_WETRANSFER=${UPLOAD_FIRMWARE_TO_WETRANSFER}" >> $GITHUB_ENV
         sed -i "1a REPO_TOKEN=${{ secrets.REPO_TOKEN }}" ${GITHUB_WORKSPACE}/devices/common/custom.sh
 
-    - name: Trigger Packages Update
+    - name: 更新软件包
       run: |
         gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
@@ -80,7 +80,7 @@ jobs:
         --data '{"event_type": "update"}'
         fi
 
-    - name: Initialization environment
+    - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -93,14 +93,14 @@ jobs:
         sudo -E apt-get -qq clean ) &
         sudo timedatectl set-timezone "$TZ"
 
-    - name: Get current date
+    - name: 获取当前日期
       id: date
       run: |
         echo "date=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
         echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
         echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV
 
-    - name: Clone source code
+    - name: 下载源代码
       run: |
         #REPO_BRANCH="$(curl -s https://api.github.com/repos/openwrt/openwrt/tags | jq -r '.[].name' | grep v22 | head -n 1 | sed -e 's/v//')"
         REPO_BRANCH="22.03-SNAPSHOT"
@@ -134,7 +134,7 @@ jobs:
             curl -fL -m 150 -o sdk.tar.xz https://downloads.openwrt.org/releases/$REPO_BRANCH/targets/kirkwood/generic/openwrt-sdk-$REPO_BRANCH-kirkwood_gcc-11.2.0_musl_eabi.Linux-x86_64.tar.xz || curl -fL -m 150 -o sdk.tar.xz https://downloads.cdn.openwrt.org/releases/$REPO_BRANCH/targets/kirkwood/generic/openwrt-sdk-$REPO_BRANCH-kirkwood_gcc-11.2.0_musl_eabi.Linux-x86_64.tar.xz
         fi
 
-    - name: Free up disk space
+    - name: 释放磁盘空间
       if: env.FREE_UP_DISK == 'true'
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -144,7 +144,7 @@ jobs:
         ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
         ln -sf /mnt/openwrt/bin openwrt/bin
     
-    - name: Load custom configuration
+    - name: 加载自定义配置
       run: |
         mkdir openwrt
         tar -xJf sdk.tar.xz -C openwrt
@@ -177,11 +177,11 @@ jobs:
         fi
 
 
-    - name: SSH connection to Actions
+    - name: SSH 连接
       uses: makebl/debugger-action@master
       if: contains(github.event.action, 'ssh')
 
-    - name: Prepare
+    - name: 准备启动
       run: |
         cd openwrt
         make defconfig
@@ -191,7 +191,7 @@ jobs:
         mkdir package/feeds/makebl
         cp -rf makebl.b/{wxbase,lib*,rapidjson,jpcre2,toml11,quickjspp,qtbase,qttools,rblibtorrent} package/feeds/makebl/
 
-    - name: Compile the firmware
+    - name: 编译插件
       run: |
         cd openwrt
           echo -e "$(($(nproc)+1)) thread compile"
@@ -231,10 +231,10 @@ jobs:
           done
         echo "status=success" >> $GITHUB_ENV
 
-    - name: Check space usage
+    - name: 检查空间使用情况
       run: df -hT
 
-    - name: Organize files
+    - name: 整理文件
       id: organize
       run: |
         mkdir packages
@@ -251,7 +251,7 @@ jobs:
            echo "NAME=🎉 ${{ env.date2 }} ${{matrix.target}} 🎉" >> $GITHUB_ENV
         fi
 
-    - name: Upload firmware to cowtransfer
+    - name: 上传到 cowtransfer
       if: env.UPLOAD_FIRMWARE_TO_COWTRANSFER == 'true'
       continue-on-error: true
       run: |
@@ -261,7 +261,7 @@ jobs:
         echo "COWURL=$cowurl" >> $GITHUB_ENV
         echo "Download Link: ${{ env.EMOJI }} $cowurl ${{ env.EMOJI }} 🚀"
  
-    - name: Upload firmware to WeTransfer
+    - name: 上传到 WeTransfer
       if: env.UPLOAD_FIRMWARE_TO_WETRANSFER == 'true'
       continue-on-error: true
       run: |
@@ -271,7 +271,7 @@ jobs:
         echo "WETRANS=$wetrans" >> $GITHUB_ENV
         echo "Download Link: ${{ env.EMOJI }} $wetrans ${{ env.EMOJI }} 🚀"
         
-    - name: Create release
+    - name: 创建发布
       id: create_release
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
       continue-on-error: true
@@ -282,7 +282,7 @@ jobs:
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
 
-    - name: Upload packages for release
+    - name: 上传插件包
       uses: softprops/action-gh-release@master
       continue-on-error: true
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
@@ -296,7 +296,7 @@ jobs:
         tag_name: ${{ env.date }}_${{matrix.target}}
         body_path: release.txt
 
-    - name: Upload packages for artifact
+    - name: 上传到 artifact
       uses: actions/upload-artifact@main
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_ARTIFACT == 'true'
@@ -304,7 +304,7 @@ jobs:
         name: ${{ env.date3 }} ${{matrix.target}}
         path: ${{ env.FIRMWARE }}
 
-    - name: deploy files to server
+    - name: 上传插件到服务器
       uses: easingthemes/ssh-deploy@main
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
@@ -315,7 +315,7 @@ jobs:
         REMOTE_USER: root
         TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}//"
 
-    - name: remote ssh command
+    - name: 远程 SSH 命令
       uses: appleboy/ssh-action@master
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
@@ -327,14 +327,14 @@ jobs:
            # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/${{matrix.target}}//"/* "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/
             opkg ${{matrix.target}} &
 
-    - name: Delete workflow runs
+    - name: 删除工作流运行
       uses: GitRML/delete-workflow-runs@main
       continue-on-error: true
       with:
         retain_days: 20
         keep_minimum_runs: 1
 
-    - name: Remove old Releases
+    - name: 删除旧版本
       uses: dev-drprasad/delete-older-releases@master
       continue-on-error: true
       if: env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true' && !cancelled()
