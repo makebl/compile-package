@@ -283,7 +283,7 @@ jobs:
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
 
     - name: 上传插件包
-      uses: ncipollo/release-action@main
+      uses: softprops/action-gh-release@master
       continue-on-error: true
       if: env.REPO_TOKEN && env.UPLOAD_FIRMWARE_FOR_RELEASE == 'true'
       env:
