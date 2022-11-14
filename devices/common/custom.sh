@@ -1,9 +1,9 @@
 #!/bin/bash
 
 shopt -s extglob
-rm -rf feeds/makebl/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
+rm -rf feeds/kiddin9/{diy,mt-drivers,shortcut-fe,luci-app-mtwifi,base-files}
 
-for ipk in $(find feeds/makebl/* -maxdepth 0 -type d);
+for ipk in $(find feeds/kiddin9/* -maxdepth 0 -type d);
 do
 	[[ "$(grep "KernelPackage" "$ipk/Makefile")" && ! "$(grep "BuildPackage" "$ipk/Makefile")" ]] && rm -rf $ipk || true
 done
@@ -22,21 +22,21 @@ rm -Rf feeds/base/package/system/!(opkg|ubus|uci|ca-certificates)
 rm -Rf feeds/base/package/kernel/!(cryptodev-linux)
 #COMMENT
 
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
+status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
 while [ "$status" == "in_progress" ];do
 sleep 5
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].status')
+status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
 done
 
 ./scripts/feeds update -a
-./scripts/feeds install -a -p makebl -f
+./scripts/feeds install -a -p kiddin9 -f
 ./scripts/feeds install -a
 
 rm -rf feeds/packages/lang/golang
 svn export https://github.com/coolsnowwolf/packages/trunk/lang/golang feeds/packages/lang/golang
 
-sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/makebl/luci-*/luasrc/controller/* -name "*.lua"`
-# sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/makebl/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
+sed -i 's/\(page\|e\)\?.acl_depends.*\?}//' `find package/feeds/kiddin9/luci-*/luasrc/controller/* -name "*.lua"`
+# sed -i 's/\/cgi-bin\/\(luci\|cgi-\)/\/\1/g' `find package/feeds/kiddin9/luci-*/ -name "*.lua" -or -name "*.htm*" -or -name "*.js"` &
 sed -i 's/Os/O2/g' include/target.mk
 
 sed -i \
@@ -45,7 +45,7 @@ sed -i \
 	-e 's/+python\( \|$\)/+python3/' \
 	-e 's?../../lang?$(TOPDIR)/feeds/packages/lang?' \
 	-e 's,$(STAGING_DIR_HOST)/bin/upx,upx,' \
-	package/feeds/makebl/*/Makefile
+	package/feeds/kiddin9/*/Makefile
 
 cp -f devices/common/.config .config
 mv feeds/base feeds/base.bak

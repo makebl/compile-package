@@ -68,11 +68,11 @@ jobs:
 
     - name: Trigger Packages Update
       run: |
-        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
+        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
         now=$(date -d "$(date)" +%s)
         if [[ $(expr $gitdate + 120) < $now ]]; then
-        curl -X POST https://api.github.com/repos/makebl/packages/dispatches \
+        curl -X POST https://api.github.com/repos/kiddin9/openwrt-packages/dispatches \
         -H "Accept: application/vnd.github.everest-preview+json" \
         -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
         --data '{"event_type": "update"}'
@@ -173,23 +173,23 @@ jobs:
           echo >> .config
           cat devices/${{matrix.target}}/.config >> .config
         fi
-        #if [[ ${{github.actor}} == "makebl" ]]; then
-          #sed -i "s/index()/index()\nif luci.sys.exec(\"cat \/etc\/openwrt_release | grep -o -E ^DISTRIB_DESCRIPTION='.*(GaryPang|Kiddin)'\") == \"\" then return end/g" package/feeds/makebl/luci-app*/luasrc/controller/*.lua
+        #if [[ ${{github.actor}} == "kiddin9" ]]; then
+          #sed -i "s/index()/index()\nif luci.sys.exec(\"cat \/etc\/openwrt_release | grep -o -E ^DISTRIB_DESCRIPTION='.*(GaryPang|Kiddin)'\") == \"\" then return end/g" package/feeds/kiddin9/luci-app*/luasrc/controller/*.lua
         #fi
 
     - name: SSH connection to Actions
-      uses: makebl/debugger-action@master
+      uses: kiddin9/debugger-action@master
       if: contains(github.event.action, 'ssh')
 
     - name: Prepare
       run: |
         cd openwrt
         make defconfig
-        mv -f package/feeds/makebl makebl.b
+        mv -f package/feeds/kiddin9 kiddin9.b
         mv -f feeds/packages/lang feeds/packages/lang.b
         mv -f feeds/packages feeds/packages.b
-        mkdir package/feeds/makebl
-        cp -rf makebl.b/{wxbase,lib*,rapidjson,jpcre2,toml11,quickjspp,qtbase,qttools,rblibtorrent,openssl} package/feeds/makebl/
+        mkdir package/feeds/kiddin9
+        cp -rf kiddin9.b/{wxbase,lib*,rapidjson,jpcre2,toml11,quickjspp,qtbase,qttools,rblibtorrent,openssl} package/feeds/kiddin9/
 
     - name: Compile the firmware
       run: |
@@ -198,26 +198,26 @@ jobs:
           fpkg="$(echo "${{github.event.action}}" | sed -e 's/\(aarch64_generic\|x86_64\|i386_pentium4\|arm_arm1176jzf-s_vfp\|aarch64_cortex-a72\|arm_cortex-a7_neon-vfpv4\|arm_cortex-a9\|arm_cortex-a15_neon-vfpv4\|arm_cortex-a5_vfpv4\|mipsel_24kc\|mips_24kc\|aarch64_cortex-a53\|arm_xscale\|arm_cortex-a9_vfpv3-d16\| [0-9][0-9.]*\| ssh\| noser\| cw\)//g' | sed -e 's/ //g')"
           during="$(echo "${{github.event.action}}" | grep -o -E ' [0-9][0-9.]*' | sed -e 's/ //')"
           function comp(){
-             cp -rf makebl.b/$ipk package/feeds/makebl/
+             cp -rf kiddin9.b/$ipk package/feeds/kiddin9/
              if [[ $ipk != luci-* ]]; then
               mv -f feeds/packages.b feeds/packages
               mv feeds/packages/lang.b feeds/packages/lang
-              [ "$(grep "PKG_BUILD_DEPENDS" package/feeds/makebl/$ipk/Makefile)" ] || mv feeds/packages/lang/node feeds/packages/lang/node.b
+              [ "$(grep "PKG_BUILD_DEPENDS" package/feeds/kiddin9/$ipk/Makefile)" ] || mv feeds/packages/lang/node feeds/packages/lang/node.b
              fi
              make package/$ipk/compile -j$(($(nproc)+1)) || make package/$ipk/compile V=s >>error_$ipk.log 2>&1 || true
              if [[ $ipk != luci-* ]]; then
               mv -f feeds/packages/lang feeds/packages/lang.b 2>/dev/null || true
               mv -f feeds/packages/lang.b/node.b feeds/packages/lang.b/node 2>/dev/null || true
               mv -f feeds/packages feeds/packages.b
-              rm -rf package/feeds/makebl/$ipk
+              rm -rf package/feeds/kiddin9/$ipk
              fi
             }
-          for ipk in $(ls makebl.b | grep -E "$fpkg"); do
+          for ipk in $(ls kiddin9.b | grep -E "$fpkg"); do
             echo $ipk
             if [[ "$fpkg" && ! "$during" ]]; then
               comp
             else
-              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date') || true
+              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kiddin9/openwrt-packages/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date') || true
               if [ "$gitdate" != null ]; then
                 gitdate=$(date -d "$gitdate" +%s)
                 now=$(date -d "$(date)" +%s)
@@ -238,7 +238,7 @@ jobs:
       id: organize
       run: |
         mkdir packages
-        mv -f openwrt/bin/packages/*/makebl/* packages || true
+        mv -f openwrt/bin/packages/*/kiddin9/* packages || true
         mv -f openwrt/.config packages/${{matrix.target}}.config || true
         mv -f openwrt/bin/targets/*/*/packages/base-files* packages/ || true
         # cp -Rf openwrt/bin/packages/*/packages/python3* packages/
@@ -277,7 +277,7 @@ jobs:
       continue-on-error: true
       run: |
         echo -e "墙内加速下载 🚀:\n" >> release.txt
-        echo -e "[腾讯云] (https://oo.shuaige.cf/packages/${{matrix.target}}/ ☁)\n" >> release.txt
+        echo -e "[腾讯云] (https://op.supes.top/packages/${{matrix.target}}/ ☁)\n" >> release.txt
         [ ${{ env.WETRANS }} ] && echo -e "[WeTransfer] (${{ env.WETRANS }} 🗽)\n" >> release.txt
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
@@ -311,20 +311,20 @@ jobs:
         SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
         ARGS: "-avzr"
         SOURCE: "packages/"
-        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+        REMOTE_HOST: op.supes.top
         REMOTE_USER: root
-        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/"
+        TARGET: "/www/wwwroot/op.supes.top/packages/${{matrix.target}}/"
 
     - name: remote ssh command
       uses: appleboy/ssh-action@master
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
-        host: oo.shuaige.cf
+        host: op.supes.top
         username: root
         key: ${{ env.SSH_PRIVATE_KEY }}
         script: |
-          # cp -R /www/wwwroot/oo.shuaige.cf/packages/keep/common/* /www/wwwroot/oo.shuaige.cf/packages/${{matrix.target}}/
-          # cp -R /www/wwwroot/oo.shuaige.cf/packages/keep/${{matrix.target}}/* /www/wwwroot/oo.shuaige.cf/packages/${{matrix.target}}/
+          # cp -R /www/wwwroot/op.supes.top/packages/keep/common/* /www/wwwroot/op.supes.top/packages/${{matrix.target}}/
+          # cp -R /www/wwwroot/op.supes.top/packages/keep/${{matrix.target}}/* /www/wwwroot/op.supes.top/packages/${{matrix.target}}/
           opkg ${{matrix.target}} &
 
     - name: Delete workflow runs
