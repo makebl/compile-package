@@ -173,9 +173,7 @@ jobs:
           echo >> .config
           cat devices/${{matrix.target}}/.config >> .config
         fi
-        #if [[ ${{github.actor}} == "makebl" ]]; then
-          #sed -i "s/index()/index()\nif luci.sys.exec(\"cat \/etc\/openwrt_release | grep -o -E ^DISTRIB_DESCRIPTION='.*(GaryPang|Kiddin)'\") == \"\" then return end/g" package/feeds/makebl/luci-app*/luasrc/controller/*.lua
-        #fi
+
 
     - name: SSH connection to Actions
       uses: makebl/debugger-action@master
@@ -189,7 +187,7 @@ jobs:
         mv -f feeds/packages/lang feeds/packages/lang.b
         mv -f feeds/packages feeds/packages.b
         mkdir package/feeds/makebl
-        #cp -rf makebl.b/{wxbase,lib*,rapidjson,jpcre2,toml11,quickjspp,qtbase,qttools,rblibtorrent,openssl} package/feeds/makebl/
+        cp -rf makebl.b/{wxbase,lib*,rapidjson,jpcre2,toml11,quickjspp,qtbase,qttools,rblibtorrent} package/feeds/makebl/
 
     - name: Compile the firmware
       run: |
