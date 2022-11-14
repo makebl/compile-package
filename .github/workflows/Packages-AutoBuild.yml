@@ -68,11 +68,11 @@ jobs:
 
     - name: Trigger Packages Update
       run: |
-        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kiddin9/openwrt-packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
+        gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/actions/runs" | jq -r '.workflow_runs[0].created_at')
         gitdate=$(date -d "$gitdate" +%s)
         now=$(date -d "$(date)" +%s)
         if [[ $(expr $gitdate + 120) < $now ]]; then
-        curl -X POST https://api.github.com/repos/kiddin9/openwrt-packages/dispatches \
+        curl -X POST https://api.github.com/repos/makebl/packages/dispatches \
         -H "Accept: application/vnd.github.everest-preview+json" \
         -H "Authorization: token ${{ secrets.REPO_TOKEN }}" \
         --data '{"event_type": "update"}'
@@ -217,7 +217,7 @@ jobs:
             if [[ "$fpkg" && ! "$during" ]]; then
               comp
             else
-              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/kiddin9/openwrt-packages/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date') || true
+              gitdate=$(curl -H "Authorization: token ${{ secrets.REPO_TOKEN }}" -s "https://api.github.com/repos/makebl/packages/commits?path=$ipk&per_page=1" | jq -r '.[0].commit.committer.date') || true
               if [ "$gitdate" != null ]; then
                 gitdate=$(date -d "$gitdate" +%s)
                 now=$(date -d "$(date)" +%s)
@@ -238,7 +238,7 @@ jobs:
       id: organize
       run: |
         mkdir packages
-        mv -f openwrt/bin/packages/*/kiddin9/* packages || true
+        mv -f openwrt/bin/packages/*/makebl/* packages || true
         mv -f openwrt/.config packages/${{matrix.target}}.config || true
         mv -f openwrt/bin/targets/*/*/packages/base-files* packages/ || true
         # cp -Rf openwrt/bin/packages/*/packages/python3* packages/
@@ -248,7 +248,7 @@ jobs:
         if [[ $(ls -l openwrt/error* | grep "^-" | wc -l) -le 0 ]]; then
            echo "NAME=${Emoji[$[$RANDOM % ${#Emoji[@]}]]} ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}" >> $GITHUB_ENV
         else
-           echo "NAME=❌ ${{ env.date2 }} ${{matrix.target}} ❌" >> $GITHUB_ENV
+           echo "NAME=🎉 ${{ env.date2 }} ${{matrix.target}} 🎉" >> $GITHUB_ENV
         fi
 
     - name: Upload firmware to cowtransfer
@@ -311,20 +311,20 @@ jobs:
         SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
         ARGS: "-avzr"
         SOURCE: "packages/"
-        REMOTE_HOST: op.supes.top
+        REMOTE_HOST: /${{ secrets.REMOTE_HOST }}/
         REMOTE_USER: root
-        TARGET: "/www/wwwroot/op.supes.top/packages/${{matrix.target}}/"
+        TARGET: "/www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/"
 
     - name: remote ssh command
       uses: appleboy/ssh-action@master
       if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
       with:
-        host: op.supes.top
+        host: ${{ secrets.REMOTE_HOST }}
         username: root
         key: ${{ env.SSH_PRIVATE_KEY }}
         script: |
-          # cp -R /www/wwwroot/op.supes.top/packages/keep/common/* /www/wwwroot/op.supes.top/packages/${{matrix.target}}/
-          # cp -R /www/wwwroot/op.supes.top/packages/keep/${{matrix.target}}/* /www/wwwroot/op.supes.top/packages/${{matrix.target}}/
+          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/common/* /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/
+          # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/${{matrix.target}}/* /www/wwwroot//${{ secrets.REMOTE_HOST }}/${{matrix.target}}/
           opkg ${{matrix.target}} &
 
     - name: Delete workflow runs
