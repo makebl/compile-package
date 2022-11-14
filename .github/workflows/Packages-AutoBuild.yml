@@ -327,6 +327,11 @@ jobs:
            # cp -R /www/wwwroot//${{ secrets.REMOTE_HOST }}/packages/keep/${{matrix.target}}//"/* "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/
             opkg ${{matrix.target}} &
 
+    - name: Telegram 通知
+      if: env.TELEGRAM_TOKEN && ! contains(github.event.action, 'notg')
+      run: |
+          [ ${{ env.status }} == 'success' ] && curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.date3 }} ${{ env.MTARGET }} 软件仓库已更新 😋  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage"
+        
     - name: 删除工作流运行
       uses: Mattraks/delete-workflow-runs@v2
       continue-on-error: true
